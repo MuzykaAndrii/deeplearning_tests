@@ -1,5 +1,5 @@
 from tensorflow import keras
-from tensorflow.keras import layers
+from tensorflow.keras import layers, callbacks
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -27,11 +27,11 @@ y_train = df_train['quality']
 y_valid = df_valid['quality']
 
 model = keras.Sequential([
-    layers.Dense(128, activation='relu', input_shape=[11]),
-    layers.Dense(128, activation='relu'),
-    layers.Dense(128, activation='relu'),
-    layers.Dense(128, activation='relu'),
-    layers.Dense(128, activation='relu'),
+    layers.Dense(512, activation='relu', input_shape=[11]),
+    layers.Dense(512, activation='relu'),
+    layers.Dense(512, activation='relu'),
+    layers.Dense(512, activation='relu'),
+    layers.Dense(256, activation='relu'),
 
     layers.Dense(units=1),
 ])
@@ -41,15 +41,23 @@ model.compile(
     loss='mae'
 )
 
+early_stopping = callbacks.EarlyStopping(
+    min_delta=0.001, # minimium amount of change to count as an improvement
+    patience=50, # how many epochs to wait before stopping
+    restore_best_weights=True,
+)
+
 history = model.fit(
     X_train, y_train,
     validation_data=(X_valid, y_valid),
     batch_size=256,
     epochs=1000,
+    callbacks=[early_stopping],
 )
 
 # convert the training history to a dataframe
 history_df = pd.DataFrame(history.history)
 # use Pandas native plot method
-history_df['loss'].plot()
+history_df.loc[:, ['loss', 'val_loss']].plot()
+print("Minimum validation loss: {}".format(history_df['val_loss'].min()))
 plt.show()
