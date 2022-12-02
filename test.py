@@ -12,13 +12,14 @@ red_wine = pd.read_csv('./winequality-red.csv')
 # Create training and validation splits
 df_train = red_wine.sample(frac=0.7, random_state=0)
 df_valid = red_wine.drop(df_train.index)
-# print(df_train.head(4))
+print(df_train.head(4))
 
 # Scale to [0, 1]
-max_ = df_train.max(axis=0)
-min_ = df_train.min(axis=0)
-df_train = (df_train - min_) / (max_ - min_)
-df_valid = (df_valid - min_) / (max_ - min_)
+# max_ = df_train.max(axis=0)
+# min_ = df_train.min(axis=0)
+# df_train = (df_train - min_) / (max_ - min_)
+# df_valid = (df_valid - min_) / (max_ - min_)
+# print(df_train.head(4))
 
 # Split features and target
 X_train = df_train.drop('quality', axis=1)
@@ -27,13 +28,20 @@ y_train = df_train['quality']
 y_valid = df_valid['quality']
 
 model = keras.Sequential([
-    layers.Dense(512, activation='relu', input_shape=[11]),
-    layers.Dense(512, activation='relu'),
-    layers.Dense(512, activation='relu'),
-    layers.Dense(512, activation='relu'),
-    layers.Dense(256, activation='relu'),
+    layers.BatchNormalization(input_shape=[11]),
+    layers.Dense(1024, activation='relu'),
+    layers.Dropout(0.3),
 
-    layers.Dense(units=1),
+    layers.BatchNormalization(),
+    layers.Dense(1024, activation='relu'),
+    layers.Dropout(0.3),
+
+    layers.BatchNormalization(),
+    layers.Dense(1024, activation='relu'),
+    layers.Dropout(0.3),
+
+    layers.BatchNormalization(),
+    layers.Dense(1),
 ])
 
 model.compile(
